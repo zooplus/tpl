@@ -130,6 +130,16 @@ func TestTplOutputFile(t *testing.T) {
 	require.Equal(t, strings.TrimRight(expected, "\n"), strings.TrimRight(content, "\n"))
 }
 
+func TestTplIncludeFromInclude(t *testing.T) {
+	t.Parallel()
+
+	env := mergedEnv(map[string]string{})
+	output, err := tpl(t, env, "-t", "test/include_main.tpl")
+	require.NoError(t, err)
+
+	require.Equal(t, "parent(child\n)", strings.TrimRight(output, "\n"))
+}
+
 func TestTplLargeEnvCounts(t *testing.T) {
 	t.Parallel()
 	expected := readFileAsString(t, "test/test.txt")
