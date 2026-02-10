@@ -11,12 +11,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"reflect"
+	"io"
 )
 
 type TemplateProcessor struct {
 	config Config
 	logger Logger
 	environment map[string]any
+	writer io.Writer
 	quotingRegexes struct {
 		afterComma  *regexp.Regexp
 		beforeComma *regexp.Regexp
@@ -32,6 +34,7 @@ func (tp *TemplateProcessor) NewTemplateProcessor(config Config, logger Logger) 
 	return &TemplateProcessor{
 		config: config,
 		logger: logger,
+		writer: os.Stdout,
 		environment: make(map[string]any),
 		quotingRegexes: struct {
 			afterComma  *regexp.Regexp
@@ -154,4 +157,26 @@ func (tp *TemplateProcessor) buildEnvironment() (map[string]any, error) {
 		}
 	}
 	return tp.environment, nil
+}
+
+func (tp *TemplateProcessor) setWriter() error {
+	if len(tp.config.OutputFile) > 0 {
+		// Create file and truncate it if it already exists
+		out, err := os.OpenFile(tp.config.OutputFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+		if err != nil {
+			tp.logger.Fatal("Error opening output file: %s\n", err)
+			return err
+		}
+		tp.writer = out
+	}
+	return nil
+}
+
+func (tp *TemplateProcessor) renderTemplate() error {
+	tpl := template.Must(template.New(path.Base(tp.config.TemplateFile)).Funcs(sprig.TxtFuncMap()).Funcs(customFuctions).ParseFiles(tp.config.TemplateFile))
+	err := tpl.Execute(tp.writer, tp.environment)
+	if err != nil {
+		tp.logger.Fatal("error rendering template %v: %v\n", tp.config.TemplateFile, err)
+	}
+	return err
 }
