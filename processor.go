@@ -28,11 +28,11 @@ type TemplateProcessor struct {
 	}
 }
 
-func (tp *TemplateProcessor) NewTemplateProcessor(config Config, logger Logger, environment map[string]any) *TemplateProcessor {
+func (tp *TemplateProcessor) NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
 	return &TemplateProcessor{
 		config: config,
 		logger: logger,
-		environment: environment,
+		environment: make(map[string]any),
 		quotingRegexes: struct {
 			afterComma  *regexp.Regexp
 			beforeComma *regexp.Regexp
@@ -132,4 +132,26 @@ func (tp *TemplateProcessor) parseInput(inputStr string) (result interface{}, er
 	}
 
 	return result, err
+}
+
+func (tp *TemplateProcessor) buildEnvironment() (map[string]any, error) {
+	// generate environment map
+	for _, envVar := range os.Environ() {
+		key, value, ok := strings.Cut(envVar, "=")
+		if !ok {
+			continue
+		}
+
+		if !strings.HasPrefix(key, tp.config.Prefix) {
+			continue
+		}
+
+		data, err := tp.parseInput(value)
+		if err != nil {
+			tp.environment[key] = value
+		} else {
+			tp.environment[key] = data
+		}
+	}
+	return tp.environment, nil
 }
