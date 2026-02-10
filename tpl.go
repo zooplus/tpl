@@ -140,7 +140,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(config.TemplateFile); os.IsNotExist(err) {
-		logger.Error("%s not found\n", config.TemplateFile)
+		logger.Fatal("%s not found\n", config.TemplateFile)
 	}
 
 	// generate environment map
@@ -171,7 +171,7 @@ func main() {
 		// Create file and truncate it if it already exists
 		out, err := os.OpenFile(config.OutputFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 		if err != nil {
-			logger.Error("Error opening output file: %s\n", err)
+			logger.Fatal("Error opening output file: %s\n", err)
 			return
 		}
 		outputWriter = out
@@ -181,6 +181,6 @@ func main() {
 	tpl := template.Must(template.New(path.Base(config.TemplateFile)).Funcs(sprig.TxtFuncMap()).Funcs(customFuctions).ParseFiles(config.TemplateFile))
 	err := tpl.Execute(outputWriter, environment)
 	if err != nil {
-		logger.Error("error rendering template %v: %v\n", config.TemplateFile, err)
+		logger.Fatal("error rendering template %v: %v\n", config.TemplateFile, err)
 	}
 }
