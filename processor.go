@@ -1,24 +1,25 @@
 package main
 
 import (
+	"os"
+	"path"
 	"regexp"
 	"strings"
-	"path"
-	"os"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
 	"bytes"
 	"encoding/json"
-	"reflect"
 	"io"
+	"reflect"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 type TemplateProcessor struct {
-	config Config
-	logger Logger
-	environment map[string]any
-	writer io.Writer
+	config         Config
+	logger         Logger
+	environment    map[string]any
+	writer         io.Writer
 	quotingRegexes struct {
 		afterComma  *regexp.Regexp
 		beforeComma *regexp.Regexp
@@ -30,11 +31,11 @@ type TemplateProcessor struct {
 	}
 }
 
-func (tp *TemplateProcessor) NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
+func NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
 	return &TemplateProcessor{
-		config: config,
-		logger: logger,
-		writer: os.Stdout,
+		config:      config,
+		logger:      logger,
+		writer:      os.Stdout,
 		environment: make(map[string]any),
 		quotingRegexes: struct {
 			afterComma  *regexp.Regexp
@@ -70,10 +71,13 @@ func (tp *TemplateProcessor) renderInclude(fileName string, safeMode bool) (stri
 		}
 	}
 
-	tpl := template.Must(template.New(path.Base(fileName)).Funcs(sprig.TxtFuncMap()).ParseFiles(path.Join(lookupDir, fileName)))
+	tpl, err := template.New(path.Base(fileName)).Funcs(sprig.TxtFuncMap()).ParseFiles(path.Join(lookupDir, fileName))
+	if err != nil {
+		return "", err
+	}
 
 	var result bytes.Buffer
-	err := tpl.Execute(&result, tp.environment)
+	err = tpl.Execute(&result, tp.environment)
 	return result.String(), err
 }
 
@@ -137,7 +141,7 @@ func (tp *TemplateProcessor) parseInput(inputStr string) (result interface{}, er
 	return result, err
 }
 
-func (tp *TemplateProcessor) buildEnvironment() (map[string]any, error) {
+func (tp *TemplateProcessor) buildEnvironment() {
 	// generate environment map
 	for _, envVar := range os.Environ() {
 		key, value, ok := strings.Cut(envVar, "=")
@@ -156,7 +160,6 @@ func (tp *TemplateProcessor) buildEnvironment() (map[string]any, error) {
 			tp.environment[key] = data
 		}
 	}
-	return tp.environment, nil
 }
 
 func (tp *TemplateProcessor) setWriter() error {
@@ -173,10 +176,12 @@ func (tp *TemplateProcessor) setWriter() error {
 }
 
 func (tp *TemplateProcessor) renderTemplate() error {
-	tpl := template.Must(template.New(path.Base(tp.config.TemplateFile)).Funcs(sprig.TxtFuncMap()).Funcs(customFuctions).ParseFiles(tp.config.TemplateFile))
-	err := tpl.Execute(tp.writer, tp.environment)
+	tpl, err := template.New(path.Base(tp.config.TemplateFile)).
+		Funcs(sprig.TxtFuncMap()).
+		Funcs(tp.funcMap()).
+		ParseFiles(tp.config.TemplateFile)
 	if err != nil {
-		tp.logger.Fatal("error rendering template %v: %v\n", tp.config.TemplateFile, err)
+		return err
 	}
-	return err
+	return tpl.Execute(tp.writer, tp.environment)
 }
