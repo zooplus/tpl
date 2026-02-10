@@ -24,7 +24,7 @@ func run(t *testing.T, env map[string]string, args []string) (string, error) {
 }
 
 func tpl(t *testing.T, env map[string]string, args ...string) (string, error) {
-	defaultArgs := []string{"run", "tpl.go"}
+	defaultArgs := []string{"run", "."}
 	return run(t, env, append(defaultArgs, args...))
 }
 
