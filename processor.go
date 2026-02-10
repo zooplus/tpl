@@ -57,28 +57,38 @@ func NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
 	}
 }
 
+func (tp *TemplateProcessor) parseTemplate(filePath string) (*template.Template, error) {
+	return template.New(path.Base(filePath)).
+		Funcs(sprig.TxtFuncMap()).
+		Funcs(tp.funcMap()).
+		ParseFiles(filePath)
+}
+
 func (tp *TemplateProcessor) renderInclude(fileName string, safeMode bool) (string, error) {
 	// lookup relative file names in same directory like main template
 	lookupDir := ""
 	if !strings.HasPrefix(fileName, "/") {
 		lookupDir = path.Dir(tp.config.TemplateFile)
 	}
+	fullPath := path.Join(lookupDir, fileName)
 
 	// ignore non-existing files
 	if safeMode {
-		if _, err := os.Stat(path.Join(lookupDir, fileName)); os.IsNotExist(err) {
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 			return "", nil
 		}
 	}
 
-	tpl, err := template.New(path.Base(fileName)).Funcs(sprig.TxtFuncMap()).ParseFiles(path.Join(lookupDir, fileName))
+	tpl, err := tp.parseTemplate(fullPath)
 	if err != nil {
 		return "", err
 	}
 
 	var result bytes.Buffer
-	err = tpl.Execute(&result, tp.environment)
-	return result.String(), err
+	if err := tpl.Execute(&result, tp.environment); err != nil {
+		return "", err
+	}
+	return result.String(), nil
 }
 
 func looksLikeJSON(inputStr string) bool {
@@ -176,10 +186,7 @@ func (tp *TemplateProcessor) setWriter() error {
 }
 
 func (tp *TemplateProcessor) renderTemplate() error {
-	tpl, err := template.New(path.Base(tp.config.TemplateFile)).
-		Funcs(sprig.TxtFuncMap()).
-		Funcs(tp.funcMap()).
-		ParseFiles(tp.config.TemplateFile)
+	tpl, err := tp.parseTemplate(tp.config.TemplateFile)
 	if err != nil {
 		return err
 	}
