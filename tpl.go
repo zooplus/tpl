@@ -35,19 +35,7 @@ var (
 	reReplaceDoubleColon     = regexp.MustCompile(`::`)
 )
 
-func looksLikeJSON(inputStr string) bool {
-	trimmed := strings.TrimSpace(inputStr)
-	if trimmed == "" {
-		return false
-	}
 
-	switch trimmed[0] {
-	case '{', '[', '"':
-		return true
-	default:
-		return false
-	}
-}
 
 func inputToObject(inputStr string, debug bool) (result interface{}, err error) {
 	if debug {
@@ -142,7 +130,7 @@ func main() {
 		if BuildVersion == "" {
 			BuildVersion = "development" // Fallback if not set during build
 		}
-		fmt.Fprintf(os.Stdout, "version %s\n", BuildVersion)
+		fmt.Printf("version %s\n", BuildVersion)
 		os.Exit(0)
 	}
 

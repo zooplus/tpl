@@ -9,6 +9,8 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"bytes"
+	"encoding/json"
+	"reflect"
 )
 
 type TemplateProcessor struct {
@@ -70,4 +72,64 @@ func (tp *TemplateProcessor) renderInclude(fileName string, safeMode bool) (stri
 	var result bytes.Buffer
 	err := tpl.Execute(&result, tp.environment)
 	return result.String(), err
+}
+
+func looksLikeJSON(inputStr string) bool {
+	trimmed := strings.TrimSpace(inputStr)
+	if trimmed == "" {
+		return false
+	}
+
+	switch trimmed[0] {
+	case '{', '[', '"':
+		return true
+	default:
+		return false
+	}
+}
+
+func (tp *TemplateProcessor) parseInput(inputStr string) (result interface{}, err error) {
+	tp.logger.Debug("----\ninput is: %v\n", inputStr)
+
+	if !looksLikeJSON(inputStr) {
+		tp.logger.Debug("result is: %v\n----\n", inputStr)
+		return inputStr, nil
+	}
+
+	// try to parse a plain json first
+	jsonStr := inputStr
+	err = json.Unmarshal([]byte(jsonStr), &result)
+
+	// now try to enrich unquoted json
+	if err != nil {
+		// insert " after , if next is none of [ { "
+		jsonStr = tp.quotingRegexes.afterComma.ReplaceAllString(jsonStr, ",\"$1")
+		// insert " before , if previous is none of ] } "
+		jsonStr = tp.quotingRegexes.beforeComma.ReplaceAllString(jsonStr, "$1\",")
+		// insert " after [ { if next is none of ] [ } { , "
+		jsonStr = tp.quotingRegexes.afterBrace.ReplaceAllString(jsonStr, "$1\"$2")
+		// insert " before ] } if previous is none of ] [ } { , "
+		jsonStr = tp.quotingRegexes.beforeBrace.ReplaceAllString(jsonStr, "$1\"$2")
+		// insert " after : if next is none of : [ { "
+		jsonStr = tp.quotingRegexes.afterColon.ReplaceAllString(jsonStr, "$1:\"$2")
+		// insert " before : if previous is not :
+		jsonStr = tp.quotingRegexes.beforeColon.ReplaceAllString(jsonStr, "$1\":$2")
+		// replace :: with : (double colons can be used to escape a colon)
+		jsonStr = tp.quotingRegexes.doubleColon.ReplaceAllString(jsonStr, ":")
+	}
+	tp.logger.Debug("json is: %v\n", jsonStr)
+
+	// try parsing json again, if it fails fall back to the plain input value
+	err = json.Unmarshal([]byte(jsonStr), &result)
+	if err != nil || result == nil || reflect.TypeOf(result).Kind() == reflect.Float64 {
+		result = inputStr
+	}
+
+	if err != nil {
+		tp.logger.Debug("result is: %v, error: %v\n----\n", result, err)
+	} else {
+		tp.logger.Debug("result is: %v\n----\n", result)
+	}
+
+	return result, err
 }
