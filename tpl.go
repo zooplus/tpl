@@ -136,6 +136,7 @@ func mustInclude(fileName string) string {
 func main() {
 	config := parseFlags()
 	templateFile = config.TemplateFile
+	logger := NewLogger(config.Debug)
 
 	if config.Version {
 		if BuildVersion == "" {
@@ -151,8 +152,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(config.TemplateFile); os.IsNotExist(err) {
-		fmt.Fprintf(os.Stderr, "%s not found\n", config.TemplateFile)
-		os.Exit(2)
+		logger.Error("%s not found\n", config.TemplateFile)
 	}
 
 	// generate environment map
@@ -175,7 +175,7 @@ func main() {
 	}
 
 	if config.Debug {
-		fmt.Fprintf(os.Stderr, "environment map is: %v\n", environment)
+		logger.Debug("environment map is: %v\n", environment)
 	}
 
 	outputWriter := os.Stdout
@@ -183,7 +183,7 @@ func main() {
 		// Create file and truncate it if it already exists
 		out, err := os.OpenFile(config.OutputFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error opening output file: %s", err)
+			logger.Error("Error opening output file: %s\n", err)
 			return
 		}
 		outputWriter = out
@@ -193,7 +193,6 @@ func main() {
 	tpl := template.Must(template.New(path.Base(config.TemplateFile)).Funcs(sprig.TxtFuncMap()).Funcs(customFuctions).ParseFiles(config.TemplateFile))
 	err := tpl.Execute(outputWriter, environment)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error rendering template %v: %v\n", config.TemplateFile, err)
-		os.Exit(2)
+		logger.Error("error rendering template %v: %v\n", config.TemplateFile, err)
 	}
 }

@@ -15,10 +15,10 @@ type StdLogger struct {
 	debug  bool
 }
 
-func NewLogger(config Config) Logger {
+func NewLogger(debug bool) Logger {
 	return &StdLogger{
 		logger: log.New(os.Stderr, "", 0),
-		debug:  config.Debug,
+		debug:  debug,
 	}
 }
 
@@ -29,5 +29,5 @@ func (l *StdLogger) Debug(msg string, args ...any) {
 }
 
 func (l *StdLogger) Error(msg string, args ...any) {
-	l.logger.Printf(msg, args...)
+	l.logger.Fatalf(msg, args...)
 }
