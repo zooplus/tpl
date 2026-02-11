@@ -33,12 +33,12 @@ func main() {
 	processor, err := NewTemplateProcessor(config, logger)
 	if err != nil {
 		logger.Error("error creating template processor: %v\n", err)
-		os.Exit(3)
+		os.Exit(2)
 	}
 
 	err = processor.RenderTemplate()
 	if err != nil {
 		logger.Error("error rendering template %v: %v\n", config.TemplateFile, err)
-		os.Exit(4)
+		os.Exit(2)
 	}
 }
