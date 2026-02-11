@@ -94,7 +94,7 @@ jobs:
           go build \
             -ldflags="-X main.BuildVersion=${{ steps.tag_version.outputs.new_tag }}" \
             -o bin/$OUTPUT_NAME \
-            ./tpl.go
+            .
 
           echo "binary=${OUTPUT_NAME}" >> "$GITHUB_OUTPUT"
 
