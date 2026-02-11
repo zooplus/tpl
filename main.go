@@ -1,16 +1,15 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 )
 
 var BuildVersion string
 
-
 // control ALL exits from main
 func main() {
-	config := parseFlags()
+	config := ParseFlags()
 	logger := NewLogger(config.Debug)
 
 	if config.Version {
@@ -37,7 +36,7 @@ func main() {
 		os.Exit(3)
 	}
 
-	err = processor.renderTemplate()
+	err = processor.RenderTemplate()
 	if err != nil {
 		logger.Error("error rendering template %v: %v\n", config.TemplateFile, err)
 		os.Exit(4)

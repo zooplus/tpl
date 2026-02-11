@@ -9,9 +9,9 @@ import (
 
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"reflect"
-	"fmt"
 
 	"github.com/Masterminds/sprig/v3"
 )
@@ -40,6 +40,7 @@ func NewTemplateProcessor(config Config, logger Logger) (*TemplateProcessor, err
 		logger:      logger,
 		writer:      os.Stdout,
 		environment: make(map[string]any),
+		// compile once and reuse later
 		quotingRegexes: QuotingRegexes{
 			afterComma:  regexp.MustCompile(`,([^[{"])`),
 			beforeComma: regexp.MustCompile(`([^]}"]),`),
@@ -189,7 +190,7 @@ func (tp *TemplateProcessor) setWriter() error {
 	return nil
 }
 
-func (tp *TemplateProcessor) renderTemplate() error {
+func (tp *TemplateProcessor) RenderTemplate() error {
 	tpl, err := tp.parseTemplate(tp.config.TemplateFile)
 	if err != nil {
 		return err

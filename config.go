@@ -6,13 +6,13 @@ import (
 
 type Config struct {
 	TemplateFile string
-	OutputFile string
-	Prefix string
-	Debug bool
-	Version bool
+	OutputFile   string
+	Prefix       string
+	Debug        bool
+	Version      bool
 }
 
-func parseFlags() Config {
+func ParseFlags() Config {
 	var config Config
 	flag.BoolVar(&config.Debug, "d", false, "enable debug mode")
 	flag.StringVar(&config.Prefix, "p", "", "only consider variables starting with prefix")
