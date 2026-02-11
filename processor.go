@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"io"
 	"reflect"
+	"fmt"
 
 	"github.com/Masterminds/sprig/v3"
 )
@@ -33,8 +34,8 @@ type TemplateProcessor struct {
 	quotingRegexes QuotingRegexes
 }
 
-func NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
-	return &TemplateProcessor{
+func NewTemplateProcessor(config Config, logger Logger) (*TemplateProcessor, error) {
+	tp := &TemplateProcessor{
 		config:      config,
 		logger:      logger,
 		writer:      os.Stdout,
@@ -49,6 +50,16 @@ func NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
 			doubleColon: regexp.MustCompile(`::`),
 		},
 	}
+
+	tp.buildEnvironment()
+	logger.Debug("environment map is: %v\n", tp.environment)
+
+	err := tp.setWriter()
+	if err != nil {
+		return nil, fmt.Errorf("error setting writer: %v", err)
+	}
+
+	return tp, nil
 }
 
 func (tp *TemplateProcessor) parseTemplate(filePath string) (*template.Template, error) {
@@ -171,8 +182,7 @@ func (tp *TemplateProcessor) setWriter() error {
 		// Create file and truncate it if it already exists
 		out, err := os.OpenFile(tp.config.OutputFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 		if err != nil {
-			tp.logger.Fatal("Error opening output file: %s\n", err)
-			return err
+			return fmt.Errorf("error opening output file: %s", err)
 		}
 		tp.writer = out
 	}

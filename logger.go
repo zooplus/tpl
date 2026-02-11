@@ -8,7 +8,6 @@ import (
 type Logger interface {
 	Debug(msg string, args ...any)
 	Error(msg string, args ...any)
-	Fatal(msg string, args ...any)
 }
 
 type StdLogger struct {
@@ -33,6 +32,3 @@ func (l *StdLogger) Error(msg string, args ...any) {
 	l.logger.Printf(msg, args...)
 }
 
-func (l *StdLogger) Fatal(msg string, args ...any) {
-	l.logger.Fatalf(msg, args...)
-}

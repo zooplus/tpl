@@ -2,30 +2,44 @@ package main
 
 import (
 	"os"
+	"fmt"
 )
 
 var BuildVersion string
 
 
+// control ALL exits from main
 func main() {
 	config := parseFlags()
 	logger := NewLogger(config.Debug)
-	processor := NewTemplateProcessor(config, logger)
 
-	if _, err := os.Stat(config.TemplateFile); os.IsNotExist(err) {
-		logger.Fatal("%s not found\n", config.TemplateFile)
+	if config.Version {
+		if BuildVersion == "" {
+			BuildVersion = "development" // Fallback if not set during build
+		}
+		fmt.Printf("version %s\n", BuildVersion)
+		os.Exit(0)
 	}
 
-	processor.buildEnvironment()
-	logger.Debug("environment map is: %v\n", processor.environment)
+	if len(config.TemplateFile) == 0 {
+		config.Usage()
+		os.Exit(1)
+	}
 
-	err := processor.setWriter()
+	if _, err := os.Stat(config.TemplateFile); os.IsNotExist(err) {
+		logger.Error("%s not found\n", config.TemplateFile)
+		os.Exit(2)
+	}
+
+	processor, err := NewTemplateProcessor(config, logger)
 	if err != nil {
-		logger.Fatal("error setting writer: %v\n", err)
+		logger.Error("error creating template processor: %v\n", err)
+		os.Exit(3)
 	}
 
 	err = processor.renderTemplate()
 	if err != nil {
-		logger.Fatal("error rendering template %v: %v\n", config.TemplateFile, err)
+		logger.Error("error rendering template %v: %v\n", config.TemplateFile, err)
+		os.Exit(4)
 	}
 }
