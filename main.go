@@ -1,8 +1,6 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"os"
 )
 
@@ -13,19 +11,6 @@ func main() {
 	config := parseFlags()
 	logger := NewLogger(config.Debug)
 	processor := NewTemplateProcessor(config, logger)
-
-	if config.Version {
-		if BuildVersion == "" {
-			BuildVersion = "development" // Fallback if not set during build
-		}
-		fmt.Printf("version %s\n", BuildVersion)
-		os.Exit(0)
-	}
-
-	if len(config.TemplateFile) == 0 {
-		flag.Usage()
-		os.Exit(1)
-	}
 
 	if _, err := os.Stat(config.TemplateFile); os.IsNotExist(err) {
 		logger.Fatal("%s not found\n", config.TemplateFile)
