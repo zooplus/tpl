@@ -26,6 +26,19 @@ type QuotingRegexes struct {
 	doubleColon *regexp.Regexp
 }
 
+func newQuotingRegexes() QuotingRegexes {
+	// compile once and reuse later
+	return QuotingRegexes{
+		afterComma:  regexp.MustCompile(`,([^[{"])`),
+		beforeComma: regexp.MustCompile(`([^]}"]),`),
+		afterBrace:  regexp.MustCompile(`([\[{])([^][}{,"])`),
+		beforeBrace: regexp.MustCompile(`([^][}{,"])([\]}])`),
+		afterColon:  regexp.MustCompile(`([^:]):([^:[{"])`),
+		beforeColon: regexp.MustCompile(`([^:"]):([^:])`),
+		doubleColon: regexp.MustCompile(`::`),
+	}
+}
+
 type TemplateProcessor struct {
 	config         Config
 	logger         Logger
@@ -40,16 +53,7 @@ func NewTemplateProcessor(config Config, logger Logger) (*TemplateProcessor, err
 		logger:      logger,
 		writer:      os.Stdout,
 		environment: make(map[string]any),
-		// compile once and reuse later
-		quotingRegexes: QuotingRegexes{
-			afterComma:  regexp.MustCompile(`,([^[{"])`),
-			beforeComma: regexp.MustCompile(`([^]}"]),`),
-			afterBrace:  regexp.MustCompile(`([\[{])([^][}{,"])`),
-			beforeBrace: regexp.MustCompile(`([^][}{,"])([\]}])`),
-			afterColon:  regexp.MustCompile(`([^:]):([^:[{"])`),
-			beforeColon: regexp.MustCompile(`([^:"]):([^:])`),
-			doubleColon: regexp.MustCompile(`::`),
-		},
+		quotingRegexes: newQuotingRegexes(),
 	}
 
 	tp.buildEnvironment()

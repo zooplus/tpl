@@ -31,4 +31,3 @@ func (l *StdLogger) Debug(msg string, args ...any) {
 func (l *StdLogger) Error(msg string, args ...any) {
 	l.logger.Printf(msg, args...)
 }
-
