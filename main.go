@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-var BuildVersion string
+var BuildVersion = "development" // Fallback if not set during build
 
 // control ALL exits from main
 func main() {
@@ -13,9 +13,6 @@ func main() {
 	logger := NewLogger(config.Debug)
 
 	if config.Version {
-		if BuildVersion == "" {
-			BuildVersion = "development" // Fallback if not set during build
-		}
 		fmt.Printf("version %s\n", BuildVersion)
 		os.Exit(0)
 	}
