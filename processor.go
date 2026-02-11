@@ -201,3 +201,11 @@ func (tp *TemplateProcessor) RenderTemplate() error {
 	}
 	return tpl.Execute(tp.writer, tp.environment)
 }
+
+func (tp *TemplateProcessor) Close() error {
+	// if writer is a file different than stdout/stderr, close it
+    if f, ok := tp.writer.(*os.File); ok && f != os.Stdout && f != os.Stderr {
+        return f.Close()
+    }
+    return nil
+}

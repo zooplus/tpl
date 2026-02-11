@@ -36,6 +36,7 @@ func main() {
 		os.Exit(2)
 	}
 
+	defer processor.Close() // ensure resources are cleaned up
 	err = processor.RenderTemplate()
 	if err != nil {
 		logger.Error("error rendering template %v: %v\n", config.TemplateFile, err)
