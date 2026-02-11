@@ -15,20 +15,22 @@ import (
 	"github.com/Masterminds/sprig/v3"
 )
 
+type QuotingRegexes struct {
+	afterComma  *regexp.Regexp
+	beforeComma *regexp.Regexp
+	afterBrace  *regexp.Regexp
+	beforeBrace *regexp.Regexp
+	afterColon  *regexp.Regexp
+	beforeColon *regexp.Regexp
+	doubleColon *regexp.Regexp
+}
+
 type TemplateProcessor struct {
 	config         Config
 	logger         Logger
 	environment    map[string]any
 	writer         io.Writer
-	quotingRegexes struct {
-		afterComma  *regexp.Regexp
-		beforeComma *regexp.Regexp
-		afterBrace  *regexp.Regexp
-		beforeBrace *regexp.Regexp
-		afterColon  *regexp.Regexp
-		beforeColon *regexp.Regexp
-		doubleColon *regexp.Regexp
-	}
+	quotingRegexes QuotingRegexes
 }
 
 func NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
@@ -37,15 +39,7 @@ func NewTemplateProcessor(config Config, logger Logger) *TemplateProcessor {
 		logger:      logger,
 		writer:      os.Stdout,
 		environment: make(map[string]any),
-		quotingRegexes: struct {
-			afterComma  *regexp.Regexp
-			beforeComma *regexp.Regexp
-			afterBrace  *regexp.Regexp
-			beforeBrace *regexp.Regexp
-			afterColon  *regexp.Regexp
-			beforeColon *regexp.Regexp
-			doubleColon *regexp.Regexp
-		}{
+		quotingRegexes: QuotingRegexes{
 			afterComma:  regexp.MustCompile(`,([^[{"])`),
 			beforeComma: regexp.MustCompile(`([^]}"]),`),
 			afterBrace:  regexp.MustCompile(`([\[{])([^][}{,"])`),
@@ -151,8 +145,8 @@ func (tp *TemplateProcessor) parseInput(inputStr string) (result interface{}, er
 	return result, err
 }
 
+// generate environment map
 func (tp *TemplateProcessor) buildEnvironment() {
-	// generate environment map
 	for _, envVar := range os.Environ() {
 		key, value, ok := strings.Cut(envVar, "=")
 		if !ok {
