@@ -49,10 +49,10 @@ type TemplateProcessor struct {
 
 func NewTemplateProcessor(config Config, logger Logger) (*TemplateProcessor, error) {
 	tp := &TemplateProcessor{
-		config:      config,
-		logger:      logger,
-		writer:      os.Stdout,
-		environment: make(map[string]any),
+		config:         config,
+		logger:         logger,
+		writer:         os.Stdout,
+		environment:    make(map[string]any),
 		quotingRegexes: newQuotingRegexes(),
 	}
 
@@ -115,7 +115,7 @@ func looksLikeJSON(inputStr string) bool {
 	}
 }
 
-func (tp *TemplateProcessor) parseInput(inputStr string) (result interface{}, err error) {
+func (tp *TemplateProcessor) parseInput(inputStr string) (result any, err error) {
 	tp.logger.Debug("----\ninput is: %v\n", inputStr)
 
 	if !looksLikeJSON(inputStr) {
@@ -204,8 +204,8 @@ func (tp *TemplateProcessor) RenderTemplate() error {
 
 func (tp *TemplateProcessor) Close() error {
 	// if writer is a file different than stdout/stderr, close it
-    if f, ok := tp.writer.(*os.File); ok && f != os.Stdout && f != os.Stderr {
-        return f.Close()
-    }
-    return nil
+	if f, ok := tp.writer.(*os.File); ok && f != os.Stdout && f != os.Stderr {
+		return f.Close()
+	}
+	return nil
 }

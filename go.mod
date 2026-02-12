@@ -1,8 +1,6 @@
 module github.com/tgagor/tpl
 
-go 1.25.0
-
-toolchain go1.25.6
+go 1.26.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
