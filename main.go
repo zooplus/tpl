@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"github.com/tgagor/tpl/tpl"
 )
 
 var BuildVersion = "development" // Fallback if not set during build
 
 // control ALL exits from main
 func main() {
-	config := ParseFlags()
-	logger := NewLogger(config.Debug)
+	config := tpl.ParseFlags()
+	logger := tpl.NewLogger(config.Debug)
 
 	if config.Version {
 		fmt.Printf("version %s\n", BuildVersion)
@@ -27,7 +28,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	processor, err := NewTemplateProcessor(config, logger)
+	processor, err := tpl.NewTemplateProcessor(config, logger)
 	if err != nil {
 		logger.Error("error creating template processor: %v\n", err)
 		os.Exit(2)
