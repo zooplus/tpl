@@ -237,8 +237,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from tag on master
-        run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Bump version and push tag
+        if: github.ref == 'refs/heads/main'
+        id: new_tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          dry_run: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/download-artifact@v7
         with:
@@ -258,7 +263,7 @@ jobs:
           mv bin/tpl-linux-amd64 /usr/local/bin/tpl
           tpl -v
 
-          export TPL_VERSION=${VERSION}
+          export TPL_VERSION=${{ steps.new_tag_version.outputs.new_tag }}
 
           tpl -t README.md.tpl | tee README.md
 
