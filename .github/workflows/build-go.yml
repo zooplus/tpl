@@ -260,7 +260,7 @@ jobs:
         # if: ${{ !contains(github.event.commits[0].message, 'auto-update README') }}
         run: |
           chmod +x bin/*
-          mv bin/tpl-linux-amd64 /usr/local/bin/tpl
+          ln -s bin/tpl-linux-amd64 /usr/local/bin/tpl
           tpl -v
 
           export TPL_VERSION=${{ steps.new_tag_version.outputs.new_tag }}
