@@ -251,6 +251,25 @@ jobs:
           cd bin
           sha512sum tpl-* > sha512sums.txt
 
+      - name: Update README
+        # if: ${{ !contains(github.event.commits[0].message, 'auto-update README') }}
+        run: |
+          chmod +x bin/*
+          mv bin/tpl-linux-amd64 /usr/local/bin/tpl
+          tpl -v
+
+          export TPL_VERSION=${VERSION}
+
+          tpl -t README.md.tpl | tee README.md
+
+          if [[ "$(git status --porcelain)" != "" ]]; then
+            git config user.name "GitHub Action"
+            git config user.email "action@github.com"
+            git add .
+            git commit -m "docs(readme): auto-update README.md"
+            git push
+          fi
+
       - name: Bump version and push tag
         if: github.ref == 'refs/heads/main'
         id: tag_version
