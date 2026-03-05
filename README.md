@@ -18,7 +18,7 @@ Just download the binary for your OS and arch from the [releases](https://github
 If you want to use it inside your docker image you can add this to your `Dockerfile`:
 
 ```
-ADD https://github.com/zooplus/tpl/releases/download/v0.12.4/tpl-linux-amd64 /usr/local/bin/tpl
+ADD https://github.com/zooplus/tpl/releases/download/v0.12.5/tpl-linux-amd64 /usr/local/bin/tpl
 RUN chmod a+x /usr/local/bin/tpl
 ```
 
