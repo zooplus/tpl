@@ -191,7 +191,7 @@ jobs:
           $env:baz = "1.0-123"
           $env:number = "59614658972"
           $env:null = "null"
-          [Environment]::SetEnvironmentVariable("empty", "", [EnvironmentVariableTarget]::Process)
+          $env:empty = ""
           $env:money = "500€"
           $env:special = "?&>=:/"
           $env:woot = "[]"
