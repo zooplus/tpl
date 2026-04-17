@@ -34,6 +34,50 @@ jobs:
       - name: Run Go Unit Tests
         run: go test -v
 
+  pre-commit:
+    name: pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup GoLang
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+
+      - id: vars
+        run: |
+          echo "GOBIN=$(go env GOPATH)/bin" >> "$GITHUB_OUTPUT"
+          echo "GOVERSION=$(go version | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore cached linting tools
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ${{ steps.vars.outputs.GOBIN }}/goimports
+            ${{ steps.vars.outputs.GOBIN }}/gocyclo
+            ${{ steps.vars.outputs.GOBIN }}/golangci-lint
+            ${{ steps.vars.outputs.GOBIN }}/gocritic
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('Makefile') }}
+
+      - name: Install dependencies
+        run: |
+          make install-linters
+
+      - name: Update cache of linting tools
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ${{ steps.vars.outputs.GOBIN }}/goimports
+            ${{ steps.vars.outputs.GOBIN }}/gocyclo
+            ${{ steps.vars.outputs.GOBIN }}/golangci-lint
+            ${{ steps.vars.outputs.GOBIN }}/gocritic
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('Makefile') }}
+
+      - uses: j178/prek-action@v2.0.1
+
   build:
     needs:
       - unit-tests
