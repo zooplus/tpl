@@ -54,9 +54,6 @@ runs:
           ARCH="amd64"
         fi
         echo "ARCH=$ARCH" >> $GITHUB_ENV
-        
-        EXTENSION=""
-        echo "EXTENSION=$EXTENSION" >> $GITHUB_ENV
 
     - name: Guess Architecture - Windows
       if: ${{ runner.os == 'Windows' }}
@@ -74,18 +71,38 @@ runs:
         EXTENSION=".exe"
         echo "EXTENSION=$EXTENSION" >> $GITHUB_ENV
 
-    - name: Fetch TPL
+    - name: Fetch TPL on Linux/MacOS
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
       run: |
         set -x
         OS_LOWER=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
-        curl -fsLo /usr/local/bin/tpl https://github.com/zooplus/tpl/releases/download/$VERSION/tpl-${OS_LOWER}-${ARCH}${EXTENSION}
+        curl -fsLo /usr/local/bin/tpl https://github.com/zooplus/tpl/releases/download/$VERSION/tpl-${OS_LOWER}-${ARCH}
         chmod +x /usr/local/bin/tpl
-        tpl --version
 
-    - name: Check TPL version
+    - name: Fetch TPL on Windows
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        $downloadUrl = "https://github.com/zooplus/tpl/releases/download/$env:VERSION/tpl-windows-$env:ARCH.exe"
+        $outputPath = "$env:TEMP\tpl.exe"
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $outputPath
+        Add-Content $env:GITHUB_PATH "$env:TEMP"
+
+    - name: Check TPL version (Linux/macOS)
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       shell: bash
       id: tpl-version
-      run: echo "installed-version=$(tpl --version)" >> $GITHUB_OUTPUT
+      run: echo "installed-version=$(tpl -v)" >> $GITHUB_OUTPUT
+
+    - name: Check TPL version (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      id: tpl-version
+      run: |
+        $version = & "$env:TEMP\tpl.exe" -v
+        "installed-version=$version" | Add-Content $env:GITHUB_OUTPUT

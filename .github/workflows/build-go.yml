@@ -300,3 +300,62 @@ jobs:
           for asset in bin/*; do
             gh release upload "${{ steps.tag_version.outputs.new_tag }}" "$asset"
           done
+
+  smoke-test:
+    name: test action on ${{ matrix.os }}
+    needs:
+      - build
+      - test
+    if: always() && (needs.build.result == 'success' && needs.test.result == 'success')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            binary: tpl-linux-amd64
+
+          - os: macos-latest
+            binary: tpl-macos-arm64
+
+          - os: windows-latest
+            binary: tpl-windows-amd64.exe
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # For feature/bugfix branches: download prebuilt binaries and place them where the action expects
+      - uses: actions/download-artifact@v8
+        if: github.ref != 'refs/heads/main'
+        with:
+          name: ${{ matrix.binary }}
+          path: artifacts
+
+      - name: Setup prebuilt binary for feature branch (Linux/macOS)
+        if: github.ref != 'refs/heads/main' && matrix.os != 'windows-latest'
+        run: |
+          sudo mkdir -p /usr/local/bin
+          sudo mv artifacts/${{ matrix.binary }} /usr/local/bin/tpl
+          sudo chmod +x /usr/local/bin/tpl
+
+      - name: Setup prebuilt binary for feature branch (Windows)
+        if: github.ref != 'refs/heads/main' && matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "$env:TEMP\tpl-bin" -Force
+          Move-Item "artifacts\${{ matrix.binary }}" "$env:TEMP\tpl-bin\tpl.exe" -Force
+          Add-Content $env:GITHUB_PATH "$env:TEMP\tpl-bin"
+
+      # For main branch: test using the published action
+      - uses: zooplus/tpl@main
+        if: github.ref == 'refs/heads/main'
+
+      - name: Run test on Linux/MacOS
+        if: matrix.os != 'windows-latest'
+        run: tpl -v
+
+      - name: Run test on Windows
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: tpl.exe -v
