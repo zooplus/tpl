@@ -347,9 +347,10 @@ jobs:
           Move-Item "artifacts\${{ matrix.binary }}" "$env:TEMP\tpl-bin\tpl.exe" -Force
           Add-Content $env:GITHUB_PATH "$env:TEMP\tpl-bin"
 
-      # For main branch: test using the published action
-      - uses: zooplus/tpl@main
-        if: github.ref == 'refs/heads/main'
+      # Test the action from the current branch code
+      - uses: ./
+        with:
+          version: latest
 
       - name: Run test on Linux/MacOS
         if: matrix.os != 'windows-latest'
