@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: cron
       cronjob: "0 10 5 * *"
+  - package-ecosystem: gomod
+    directory: /tools
+    schedule:
+      interval: cron
+      cronjob: "0 10 5 * *"
   - package-ecosystem: github-actions
     directory: /
     schedule:

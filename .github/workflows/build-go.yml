@@ -59,12 +59,10 @@ jobs:
             ${{ steps.vars.outputs.GOBIN }}/goimports
             ${{ steps.vars.outputs.GOBIN }}/gocyclo
             ${{ steps.vars.outputs.GOBIN }}/golangci-lint
-            ${{ steps.vars.outputs.GOBIN }}/gocritic
-          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('Makefile') }}
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('tools/go.mod', 'tools/go.sum') }}
 
       - name: Install dependencies
-        run: |
-          make install-linters
+        run: cd tools && go install ./...
 
       - name: Update cache of linting tools
         uses: actions/cache/save@v5
@@ -73,8 +71,7 @@ jobs:
             ${{ steps.vars.outputs.GOBIN }}/goimports
             ${{ steps.vars.outputs.GOBIN }}/gocyclo
             ${{ steps.vars.outputs.GOBIN }}/golangci-lint
-            ${{ steps.vars.outputs.GOBIN }}/gocritic
-          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('Makefile') }}
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('tools/go.mod', 'tools/go.sum') }}
 
       - uses: j178/prek-action@v2.0.1
 

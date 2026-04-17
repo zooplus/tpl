@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/tgagor/tpl/tpl"
+	"os"
 )
 
 var BuildVersion = "development" // Fallback if not set during build

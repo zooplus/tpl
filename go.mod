@@ -1,4 +1,4 @@
-module github.com/tgagor/tpl
+module github.com/zooplus/tpl
 
 go 1.26.0
 
