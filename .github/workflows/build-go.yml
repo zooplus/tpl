@@ -205,7 +205,7 @@ jobs:
           Write-Host "`n`n"
 
           # Run the first test and compare output with test.txt
-          .\\${{ matrix.binary }} -t test/test.tpl | Out-File -FilePath test_temp_1.out -Encoding utf8 -NoNewline
+          .\\${{ matrix.binary }} -t test/test.tpl | Out-File -FilePath test_temp_1.out -Encoding utf8
           $expected = (Get-Content -Path "test/test.txt" -Raw).TrimEnd()
           $actual = (Get-Content -Path "test_temp_1.out" -Raw).TrimEnd()
           if ($expected -eq $actual) {
