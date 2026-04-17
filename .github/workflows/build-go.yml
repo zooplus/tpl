@@ -191,12 +191,12 @@ jobs:
           $env:baz = "1.0-123"
           $env:number = "59614658972"
           $env:null = "null"
-          $env:empty = ""
+          [Environment]::SetEnvironmentVariable("empty", "", [EnvironmentVariableTarget]::Process)
           $env:money = "500€"
           $env:special = "?&>=:/"
           $env:woot = "[]"
           $env:whoa = "{}"
-          $env:backslash = "\.\\/"
+          $env:backslash = '\.\/'
           $env:urls = "{google:[https:://google.com,http:://google.de],github:https:://github.com}"
           $env:json = @'
           {"abc":123,"def":["a","b","c"],"ghi":"[{,!?!,}]"}
