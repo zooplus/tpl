@@ -1,0 +1,91 @@
+name: TPL Action
+description: Fetches and configures TPL tool
+branding:
+  icon: package
+  color: green
+inputs:
+  version:
+    description: Version of TPL to install
+    required: false
+    default: latest
+outputs:
+  installed-version:
+    description: Installed version of TPL
+    value: ${{ steps.td-version.outputs.installed-version }}
+runs:
+  using: composite
+  steps:
+    - name: Check Runner OS
+      if: ${{ runner.os != 'Linux' && runner.os != 'Windows' && runner.os != 'macOS'}}
+      shell: bash
+      run: |
+        echo "::error title=⛔ error hint::Supports Linux, Windows, and macOS Only"
+        exit 1
+    - name: Check Linux Runner Architecture
+      if: ${{ runner.os == 'Linux' && runner.arch != 'X64' && runner.arch != 'ARM64'}}
+      shell: bash
+      run: |
+        echo "::error title=⛔ error hint::On Linux only supported architecture are X64 and ARM64"
+        exit 1
+    - name: Check macOS Runner Architecture
+      if: ${{ runner.os == 'macOS' && runner.arch != 'X64' && runner.arch != 'ARM64'}}
+      shell: bash
+      run: |
+        echo "::error title=⛔ error hint::On macOS only supported architecture are X64 and ARM64"
+        exit 1
+    - name: Check Windows Runner Architecture
+      if: ${{ runner.os == 'Windows' && runner.arch != 'X64'}}
+      shell: bash
+      run: |
+        echo "::error title=⛔ error hint::On Windows only supported architecture is X64"
+        exit 1
+
+    - name: Guess Architecture - Linux
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        if [ ${{ runner.arch }} = "ARM64" ]; then
+          ARCH="arm64"
+        elif [ ${{ runner.arch }} = "ARM" ]; then
+          ARCH="arm"
+        elif [ ${{ runner.arch }} = "X86" ]; then
+          ARCH="386"
+        else
+          ARCH="amd64"
+        fi
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
+        
+        EXTENSION=""
+        echo "EXTENSION=$EXTENSION" >> $GITHUB_ENV
+
+    - name: Guess Architecture - Windows
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: |
+        if [ ${{ runner.arch }} = "ARM64" ]; then
+          ARCH="arm64"
+        elif [ ${{ runner.arch }} = "X86" ]; then
+          ARCH="x86"
+        else
+          ARCH="amd64"
+        fi
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
+
+        EXTENSION=".exe"
+        echo "EXTENSION=$EXTENSION" >> $GITHUB_ENV
+
+    - name: Fetch TPL
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -x
+        OS_LOWER=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
+        curl -fsLo /usr/local/bin/tpl https://github.com/zooplus/tpl/releases/download/$VERSION/tpl-${OS_LOWER}-${ARCH}${EXTENSION}
+        chmod +x /usr/local/bin/tpl
+        tpl --version
+
+    - name: Check TPL version
+      shell: bash
+      id: tpl-version
+      run: echo "installed-version=$(tpl --version)" >> $GITHUB_OUTPUT
