@@ -11,7 +11,7 @@ inputs:
 outputs:
   installed-version:
     description: Installed version of TPL
-    value: ${{ steps.td-version.outputs.installed-version }}
+    value: ${{ steps.tpl-version-unix.outputs.installed-version || steps.tpl-version-windows.outputs.installed-version }}
 runs:
   using: composite
   steps:
@@ -88,21 +88,21 @@ runs:
       env:
         VERSION: ${{ inputs.version }}
       run: |
+        $binDir = "${{ runner.tool_cache }}\tpl\bin"
+        New-Item -ItemType Directory -Path $binDir -Force | Out-Null
         $downloadUrl = "https://github.com/zooplus/tpl/releases/download/$env:VERSION/tpl-windows-$env:ARCH.exe"
-        $outputPath = "$env:TEMP\tpl.exe"
+        $outputPath = "$binDir\tpl.exe"
         Invoke-WebRequest -Uri $downloadUrl -OutFile $outputPath
-        Add-Content $env:GITHUB_PATH "$env:TEMP"
+        Add-Content $env:GITHUB_PATH $binDir
 
     - name: Check TPL version (Linux/macOS)
       if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       shell: bash
-      id: tpl-version
+      id: tpl-version-unix
       run: echo "installed-version=$(tpl -v)" >> $GITHUB_OUTPUT
 
     - name: Check TPL version (Windows)
       if: ${{ runner.os == 'Windows' }}
-      shell: powershell
-      id: tpl-version
-      run: |
-        $version = & "$env:TEMP\tpl.exe" -v
-        "installed-version=$version" | Add-Content $env:GITHUB_OUTPUT
+      shell: bash
+      id: tpl-version-windows
+      run: echo "installed-version=$(tpl -v)" >> $GITHUB_OUTPUT
