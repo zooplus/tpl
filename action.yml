@@ -79,7 +79,11 @@ runs:
       run: |
         set -x
         OS_LOWER=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
-        curl -fsLo /usr/local/bin/tpl https://github.com/zooplus/tpl/releases/download/$VERSION/tpl-${OS_LOWER}-${ARCH}
+        if [ "$VERSION" = "latest" ]; then
+          curl -fsLo /usr/local/bin/tpl https://github.com/zooplus/tpl/releases/latest/download/tpl-${OS_LOWER}-${ARCH}
+        else
+          curl -fsLo /usr/local/bin/tpl https://github.com/zooplus/tpl/releases/download/$VERSION/tpl-${OS_LOWER}-${ARCH}
+        fi
         chmod +x /usr/local/bin/tpl
 
     - name: Fetch TPL on Windows
@@ -90,7 +94,11 @@ runs:
       run: |
         $binDir = "${{ runner.tool_cache }}\tpl\bin"
         New-Item -ItemType Directory -Path $binDir -Force | Out-Null
-        $downloadUrl = "https://github.com/zooplus/tpl/releases/download/$env:VERSION/tpl-windows-$env:ARCH.exe"
+        if ($env:VERSION -eq "latest") {
+          $downloadUrl = "https://github.com/zooplus/tpl/releases/latest/download/tpl-windows-$env:ARCH.exe"
+        } else {
+          $downloadUrl = "https://github.com/zooplus/tpl/releases/download/$env:VERSION/tpl-windows-$env:ARCH.exe"
+        }
         $outputPath = "$binDir\tpl.exe"
         Invoke-WebRequest -Uri $downloadUrl -OutFile $outputPath
         Add-Content $env:GITHUB_PATH $binDir
