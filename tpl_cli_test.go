@@ -24,7 +24,7 @@ func execute(t *testing.T, env map[string]string, args []string) (string, error)
 	return shell.RunCommandAndGetOutputE(t, cmd)
 }
 
-func tpl_cli(t *testing.T, env map[string]string, args ...string) (string, error) {
+func tplCli(t *testing.T, env map[string]string, args ...string) (string, error) {
 	defaultArgs := []string{"run", "."}
 	return execute(t, env, append(defaultArgs, args...))
 }
@@ -73,7 +73,7 @@ func readFileAsString(t *testing.T, filePath string) string {
 func TestTplPrintVersion(t *testing.T) {
 	t.Parallel()
 
-	out, err := tpl_cli(t, map[string]string{}, "-v")
+	out, err := tplCli(t, map[string]string{}, "-v")
 	// should print version
 	assert.Regexp(t, "^version (v?[0-9]{1,}\\.[0-9]{1,}\\.[0-9]{1,})|(development)", out)
 	assert.Nil(t, err)
@@ -85,7 +85,7 @@ func TestTplPrintVersion(t *testing.T) {
 func TestTplRendersExpectedOutput(t *testing.T) {
 	env := mergedEnv(baseEnv())
 
-	output, err := tpl_cli(t, env, "-t", "test/test.tpl")
+	output, err := tplCli(t, env, "-t", "test/test.tpl")
 	require.NoError(t, err)
 
 	expected := readFileAsString(t, "test/test.txt")
@@ -103,7 +103,7 @@ func TestTplPrefixFilter(t *testing.T) {
 		"GLOBAL_VAR":  "global_value",
 	})
 
-	output, err := tpl_cli(t, env, "-p", "APP_", "-t", "test/test_prefix.tpl")
+	output, err := tplCli(t, env, "-p", "APP_", "-t", "test/test_prefix.tpl")
 	require.NoError(t, err)
 
 	// Only APP_* variables should be defined, others should be empty
@@ -119,7 +119,7 @@ func TestTplOutputFile(t *testing.T) {
 	env := mergedEnv(baseEnv())
 	outputFile := t.TempDir() + "/output.txt"
 
-	_, err := tpl_cli(t, env, "-t", "test/test.tpl", "-o", outputFile)
+	_, err := tplCli(t, env, "-t", "test/test.tpl", "-o", outputFile)
 	require.NoError(t, err)
 
 	// Verify output file was created and contains expected content
@@ -133,7 +133,7 @@ func TestTplIncludeFromInclude(t *testing.T) {
 	t.Parallel()
 
 	env := mergedEnv(map[string]string{})
-	output, err := tpl_cli(t, env, "-t", "test/include_main.tpl")
+	output, err := tplCli(t, env, "-t", "test/include_main.tpl")
 	require.NoError(t, err)
 
 	require.Equal(t, "parent(child\n)", strings.TrimRight(output, "\n"))
@@ -152,7 +152,7 @@ func TestTplLargeEnvCounts(t *testing.T) {
 			}
 
 			env := mergedEnv(envOverrides)
-			output, err := tpl_cli(t, env, "-t", "test/test.tpl")
+			output, err := tplCli(t, env, "-t", "test/test.tpl")
 			require.NoError(t, err)
 			require.Equal(t, strings.TrimRight(expected, "\n"), strings.TrimRight(output, "\n"))
 		})
