@@ -20,6 +20,8 @@ defaults:
   run:
     shell: bash
 
+permissions: read-all
+
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
@@ -38,6 +40,9 @@ jobs:
     needs:
       - unit-tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     strategy:
       matrix:
         os: [linux, windows, darwin]
@@ -102,7 +107,6 @@ jobs:
         with:
           name: ${{ steps.build.outputs.binary }}
           path: bin/*
-
       # NOTE: UPX compression causes segmentation faults when processing many
       # environment variables due to memory corruption during decompression.
       # See: https://github.com/tgagor/tpl/issues/...
