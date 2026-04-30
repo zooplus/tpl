@@ -22,7 +22,7 @@ repos:
       - id: go-fmt
       - id: go-imports
       - id: go-cyclo
-        args: [-over=25]
+        args: [-over=10]
       - id: golangci-lint
       - id: go-critic
       - id: go-mod-tidy

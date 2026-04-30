@@ -23,19 +23,6 @@ defaults:
 permissions: read-all
 
 jobs:
-  unit-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup GoLang
-        uses: actions/setup-go@v6
-        with:
-          go-version: "1.26"
-
-      - name: Run Go Unit Tests
-        run: go test -v
-
   pre-commit:
     name: pre-commit checks
     runs-on: ubuntu-latest
@@ -61,10 +48,11 @@ jobs:
             ${{ steps.vars.outputs.GOBIN }}/goimports
             ${{ steps.vars.outputs.GOBIN }}/gocyclo
             ${{ steps.vars.outputs.GOBIN }}/golangci-lint
-          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('tools/go.mod', 'tools/go.sum') }}
+            ${{ steps.vars.outputs.GOBIN }}/gocritic
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('Makefile') }}
 
       - name: Install dependencies
-        run: cd tools && go install ./...
+        run: make install-linters
 
       - name: Update cache of linting tools
         uses: actions/cache/save@v5
@@ -73,9 +61,27 @@ jobs:
             ${{ steps.vars.outputs.GOBIN }}/goimports
             ${{ steps.vars.outputs.GOBIN }}/gocyclo
             ${{ steps.vars.outputs.GOBIN }}/golangci-lint
-          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('tools/go.mod', 'tools/go.sum') }}
+            ${{ steps.vars.outputs.GOBIN }}/gocritic
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('Makefile') }}
 
       - uses: j178/prek-action@v2.0.1
+
+  unit-tests:
+    needs:
+      - pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup GoLang
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+
+      - name: Run Go Unit Tests
+        run: make unit-test
 
   build:
     needs:
@@ -99,14 +105,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: "1.26"
-
-      # - name: Run vet & lint
-      #   run: |
-      #     go install golang.org/x/lint/golint@latest
-      #     go vet cmd
-      #     golint cmd
-      # - uses: actions/setup-python@v5
-      # - uses: pre-commit/action@v3.0.1
 
       - name: Bump version and push tag
         if: github.ref == 'refs/heads/main'
