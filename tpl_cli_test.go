@@ -21,7 +21,7 @@ func execute(t *testing.T, env map[string]string, args []string) (string, error)
 		Logger:  logger.Discard,
 	}
 
-	return shell.RunCommandAndGetOutputE(t, cmd)
+	return shell.RunCommandContextAndGetOutputE(t, t.Context(), &cmd)
 }
 
 func tplCli(t *testing.T, env map[string]string, args ...string) (string, error) {
