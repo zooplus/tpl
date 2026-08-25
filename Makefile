@@ -31,7 +31,7 @@ $(GOBIN)/golangci-lint:
 	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
 
 $(GOBIN)/gocritic:
-	@go install github.com/go-critic/go-critic/cmd/gocritic@v0.14.3
+	@go install github.com/go-critic/go-critic/cmd/gocritic@v0.14.4
 
 install-linters: $(GOBIN)/goimports $(GOBIN)/gocyclo $(GOBIN)/golangci-lint $(GOBIN)/gocritic
 	@echo "Linters installed successfully."
