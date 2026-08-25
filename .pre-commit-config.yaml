@@ -24,7 +24,7 @@ repos:
       - id: go-cyclo
         args: [-over=10]
       - id: golangci-lint
-      - id: go-critic
+      # - id: go-critic # is not yet compatible with Go 1.27
       - id: go-mod-tidy
   - repo: local
     hooks:
