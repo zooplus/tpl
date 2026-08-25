@@ -38,7 +38,7 @@ jobs:
       - name: Setup GoLang
         uses: actions/setup-go@v7
         with:
-          go-version: "1.26"
+          go-version: "1.27"
 
       - id: vars
         run: |
@@ -80,7 +80,7 @@ jobs:
       - name: Setup GoLang
         uses: actions/setup-go@v7
         with:
-          go-version: "1.26"
+          go-version: "1.27"
 
       - name: Run Go Unit Tests
         run: make unit-test
@@ -107,7 +107,7 @@ jobs:
       - name: Setup GoLang
         uses: actions/setup-go@v7
         with:
-          go-version: "1.26"
+          go-version: "1.27"
 
       - name: Bump version and push tag
         if: github.ref == 'refs/heads/main'
