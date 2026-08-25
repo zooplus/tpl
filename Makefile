@@ -22,7 +22,7 @@ install: bin/tpl
 	@echo "Installed tpl to $(GOBIN)/tpl"
 
 $(GOBIN)/goimports:
-	@go install golang.org/x/tools/cmd/goimports@v0.44.0
+	@go install golang.org/x/tools/cmd/goimports@v0.49.0
 
 $(GOBIN)/gocyclo:
 	@go install github.com/fzipp/gocyclo/cmd/gocyclo@v0.6.0
