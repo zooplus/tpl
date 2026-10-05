@@ -112,7 +112,7 @@ jobs:
       - name: Bump version and push tag
         if: github.ref == 'refs/heads/main'
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: mathieudutour/github-tag-action@v7
         with:
           dry_run: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -332,7 +332,7 @@ jobs:
       - name: Bump version and push tag
         if: github.ref == 'refs/heads/main'
         id: new_tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: mathieudutour/github-tag-action@v7
         with:
           dry_run: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -369,7 +369,7 @@ jobs:
       - name: Bump version and push tag
         if: github.ref == 'refs/heads/main'
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: mathieudutour/github-tag-action@v7
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
